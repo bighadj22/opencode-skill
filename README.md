@@ -4,6 +4,98 @@
 
 A reusable opencode skill that scaffolds a complete team of AI agents in any project.
 
+## Prerequisites
+
+Before using this skill, you need to have OpenCode CLI installed.
+
+### Installing OpenCode CLI
+
+#### Quick Install (Recommended)
+
+```bash
+curl -fsSL https://opencode.ai/install | bash
+```
+
+#### Alternative Installation Methods
+
+**Using npm:**
+```bash
+npm install -g opencode-ai
+```
+
+**Using Homebrew (macOS/Linux):**
+```bash
+brew install anomalyco/tap/opencode
+```
+
+**Using Chocolatey (Windows):**
+```bash
+choco install opencode
+```
+
+**Using Scoop (Windows):**
+```bash
+scoop install opencode
+```
+
+**Using Arch Linux:**
+```bash
+sudo pacman -S opencode           # Stable
+paru -S opencode-bin              # Latest from AUR
+```
+
+**Using Mise:**
+```bash
+mise use -g github:anomalyco/opencode
+```
+
+**Using Docker:**
+```bash
+docker run -it --rm ghcr.io/anomalyco/opencode
+```
+
+#### Verify Installation
+
+```bash
+opencode --version
+```
+
+You should see the version number (e.g., `1.14.33`).
+
+#### Configure a Provider
+
+This skill defaults to **Cloudflare Workers AI** (`cloudflare-workers-ai/@cf/zai-org/glm-5.2`) — no OpenAI or Anthropic API keys needed. If you already have Cloudflare configured via OpenCode, you're ready to go.
+
+To use a different provider instead:
+
+```bash
+opencode
+# Then run: /connect
+```
+
+Select a provider and follow the prompts to add your API key. When you set up an agent team, tell the skill which model you want to use and it will configure all agents accordingly.
+
+---
+
+## Default Model & Cloudflare Integration
+
+### Default LLM: Cloudflare Workers AI
+
+All agents created by this skill default to:
+
+```
+cloudflare-workers-ai/@cf/zai-org/glm-5.2
+```
+
+This model runs on **Cloudflare's Workers AI Gateway** — no OpenAI or Anthropic API keys are required. The model ID is set in each agent's YAML frontmatter and in `opencode.json`.
+
+**Want to use a different model?** Just tell the skill when you set up your team:
+- "Use Claude" → agents get `anthropic/claude-sonnet-4-5`
+- "Use OpenAI" → agents get `openai/gpt-4o`
+- "Use my opencode provider" → agents inherit your `/connect` provider (model field omitted)
+
+---
+
 ## What It Does
 
 This skill helps you create production-ready agent teams for automating multi-step workflows. When you load this skill and describe your pipeline, it will:
@@ -18,7 +110,9 @@ This skill helps you create production-ready agent teams for automating multi-st
 8. **Create** custom commands for repetitive workflows (optional)
 9. **Test** the pipeline end-to-end
 
-## Installation
+---
+
+## Installing This Skill
 
 ### Option 1: Clone from GitHub (Recommended)
 
@@ -125,6 +219,7 @@ This skill works for any multi-step automated workflow:
 
 ## Features
 
+- **Cloudflare Workers AI by Default**: All agents use `cloudflare-workers-ai/@cf/zai-org/glm-5.2` — no API keys needed out of the box
 - **Complete Setup**: Creates all necessary files and directories
 - **Best Practices**: Follows OpenCode conventions and patterns
 - **Comprehensive Documentation**: Includes 9 detailed reference files covering all OpenCode features

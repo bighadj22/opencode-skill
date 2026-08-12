@@ -2,7 +2,7 @@
 name: {{AGENT_NAME}}
 description: {{AGENT_DESCRIPTION}}
 mode: subagent
-model: {{MODEL_ID}}
+model: cloudflare-workers-ai/@cf/zai-org/glm-5.2
 temperature: {{TEMPERATURE}}
 permission:
   edit:
