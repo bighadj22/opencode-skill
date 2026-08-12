@@ -14,8 +14,9 @@ This skill helps you create production-ready agent teams for automating multi-st
 4. **Create** subagent `.md` files with proper permissions
 5. **Create** skill `.md` files for domain knowledge
 6. **Create** custom tool `.py` + `.ts` pairs
-7. **Create** the `AGENTS.md` project instructions file
-8. **Test** the pipeline end-to-end
+7. **Create** the `AGENTS.md` project instructions file (or use `/init`)
+8. **Create** custom commands for repetitive workflows (optional)
+9. **Test** the pipeline end-to-end
 
 ## Installation
 
@@ -94,6 +95,8 @@ agent-team-setup-skill/
     opencode-agents.md
     opencode-skills.md
     opencode-tools.md
+    opencode-commands.md
+    opencode-rules.md
     opencode-config.md
     opencode-permissions.md
     opencode-mcp.md
@@ -124,11 +127,13 @@ This skill works for any multi-step automated workflow:
 
 - **Complete Setup**: Creates all necessary files and directories
 - **Best Practices**: Follows OpenCode conventions and patterns
-- **Comprehensive Documentation**: Includes 7 detailed reference files covering all OpenCode features
+- **Comprehensive Documentation**: Includes 9 detailed reference files covering all OpenCode features
 - **Flexible Architecture**: Adapts to any domain or workflow
 - **Permission Control**: Proper security boundaries for each agent
 - **Custom Tools**: Templates for Python + TypeScript tool integration
 - **Skills System**: Knowledge documents for domain-specific guidance
+- **Commands System**: Reusable prompt templates for common workflows
+- **AGENTS.md Integration**: Project-level instructions with /init support
 
 ## License
 

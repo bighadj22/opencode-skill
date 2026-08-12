@@ -414,12 +414,36 @@ Install with: `pip3 install -r .opencode/tools/requirements.txt`
 The `AGENTS.md` file at the project root is the project-level instruction file. It
 gives every agent (and the user's main session) context about the project.
 
-### 7.1 Template
+### 7.1 Initialize with /init
+
+You can create or update `AGENTS.md` automatically:
+
+```
+/init
+```
+
+The `/init` command scans your repository, may ask clarifying questions, and generates
+concise project-specific guidance covering:
+- Build, lint, and test commands
+- Command order and verification steps
+- Architecture and repository structure
+- Project-specific conventions and operational gotchas
+
+If `AGENTS.md` already exists, `/init` improves it in place instead of replacing it.
+
+### 7.2 Template
 
 ```markdown
 # [Project Name]
 
 [One paragraph: what the project is, what the default agent does, and how to use it.]
+
+## Commands
+
+- `[build command]` - Build the project
+- `[test command]` - Run tests
+- `[lint command]` - Lint and format code
+- `[deploy command]` - Deploy to production
 
 ## Repo map
 
@@ -447,11 +471,114 @@ gives every agent (and the user's main session) context about the project.
 - Commit style: short imperative, e.g. `feat: description`.
 ```
 
+### 7.3 Custom Instructions Array
+
+For larger projects, use `opencode.json` to reference additional instruction files:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "CONTRIBUTING.md",
+    "docs/guidelines.md",
+    ".cursor/rules/*.md"
+  ]
+}
+```
+
+This avoids duplicating existing documentation into AGENTS.md. Supports glob patterns
+for monorepos: `packages/*/AGENTS.md`
+
 ---
 
-## Phase 8: Verify and Test
+## Phase 8: Create Custom Commands (Optional)
 
-### 8.1 Verify structure
+Commands are reusable prompt templates that execute when you type `/command-name` in
+the OpenCode TUI. They're useful for repetitive workflows in your agent pipeline.
+
+### 8.1 When to Create Commands
+
+Create commands for tasks your team runs frequently:
+- Running the full pipeline on a topic
+- Testing and reviewing output
+- Analyzing recent changes
+- Generating reports
+- Deploying to production
+
+### 8.2 Command File Template
+
+Create markdown files in `.opencode/commands/`:
+
+**.opencode/commands/run-pipeline.md:**
+```markdown
+---
+description: Run the full content pipeline
+agent: coordinator
+---
+
+Run the complete pipeline for topic: $ARGUMENTS
+
+Execute each agent in sequence:
+1. Scout research
+2. Planner brief
+3. Writer draft
+4. Editor review
+5. Publisher deploy
+
+Report progress after each step.
+```
+
+Usage: `/run-pipeline "AI trends 2024"`
+
+### 8.3 Command Features
+
+**Arguments:** Use `$ARGUMENTS` or `$1`, `$2`, `$3` for positional parameters
+
+**Shell output:** Use !```command``` to inject bash output:
+```markdown
+Recent changes:
+!`git log --oneline -10`
+```
+
+**File references:** Use `@filename` to include file content:
+```markdown
+Review the component in @src/components/Button.tsx
+```
+
+### 8.4 Example Commands for Agent Teams
+
+**.opencode/commands/status.md:**
+```markdown
+---
+description: Check pipeline status
+---
+
+Check workspace status:
+!`ls -la .opencode/workspace/*/`
+
+Report which stages are complete and what's next.
+```
+
+**.opencode/commands/test-output.md:**
+```markdown
+---
+description: Test and validate output
+agent: editor
+---
+
+Review all output files:
+!`find .opencode/workspace/final -type f`
+
+Validate each file meets quality standards.
+```
+
+---
+
+## Phase 9: Verify and Test
+
+## Phase 9: Verify and Test
+
+### 9.1 Verify structure
 
 Check that all files exist:
 ```
@@ -465,7 +592,7 @@ AGENTS.md
 .opencode/requirements.txt (if tools have Python deps)
 ```
 
-### 8.2 Test the pipeline
+### 9.2 Test the pipeline
 
 1. Run `opencode` in the project directory.
 2. Give the coordinator a test input.
@@ -473,7 +600,7 @@ AGENTS.md
 4. Check that workspace files are created at each step.
 5. Verify the final output is correct.
 
-### 8.3 Common issues
+### 9.3 Common issues
 
 | Issue | Fix |
 |---|---|
@@ -613,11 +740,12 @@ Only write facts with a source. Note: what, when, who, URL.
 - [ ] Create `.opencode/.gitignore`
 - [ ] Create workspace subdirectories
 - [ ] Create `opencode.json` with coordinator
-- [ ] Create `AGENTS.md` with project context
+- [ ] Create `AGENTS.md` with project context (or run `/init`)
 - [ ] Create one `.md` per subagent in `.opencode/agents/`
 - [ ] Create one `SKILL.md` per skill in `.opencode/skills/[name]/`
 - [ ] Create `.py` + `.ts` pairs per tool in `.opencode/tools/`
 - [ ] Create `requirements.txt` for Python deps
+- [ ] Create custom commands in `.opencode/commands/` (optional)
 - [ ] Test the pipeline end-to-end
 - [ ] Fix any issues from testing
 
@@ -633,6 +761,10 @@ This skill includes comprehensive references extracted from the official opencod
 
 - **[opencode-tools.md](references/opencode-tools.md)** - Custom tool creation guide: tool structure (TypeScript wrappers + Python scripts), tool() helper API, arguments with Zod/tool.schema, context object (agent, sessionID, messageID, directory, worktree), using Bun.$ for shell commands, Python tool patterns, and complete examples.
 
+- **[opencode-commands.md](references/opencode-commands.md)** - Custom commands system: command creation (markdown files and JSON config), prompt features ($ARGUMENTS, positional parameters, shell output injection with !`command`, file references with @filename), configuration options (template, description, agent, subtask, model), built-in commands, and command examples for agent teams.
+
+- **[opencode-rules.md](references/opencode-rules.md)** - Rules and instructions guide: AGENTS.md purpose and best practices, /init command for automatic generation, file locations and precedence (project, global, Claude Code compatibility), custom instructions array in opencode.json with glob patterns, remote URL support, referencing external files, and integration with agent teams.
+
 - **[opencode-config.md](references/opencode-config.md)** - Complete opencode.json schema: all configuration locations and precedence order, config file format (JSON/JSONC), major options (models, agents, default_agent, subagent_depth, permissions, tools, commands, instructions, mcp, server, shell, sharing, snapshot, autoupdate, formatters, lsp, compaction, watcher, image attachments, policies, plugins, enabled/disabled providers), variable substitution ({env:VAR}, {file:path}), TUI configuration (tui.json), and managed settings for enterprise.
 
 - **[opencode-permissions.md](references/opencode-permissions.md)** - Permission system guide: permission actions (allow/ask/deny), all available permissions (read, edit, glob, grep, list, bash, task, skill, lsp, question, webfetch, websearch, external_directory, doom_loop, todowrite), pattern matching rules (wildcards, home directory expansion), granular object syntax for path/command patterns, auto mode (--auto flag), per-agent permission overrides, task permissions for controlling subagent spawning, and common permission patterns.
@@ -647,3 +779,5 @@ When building agent teams, consult these references for:
 - Complete MCP server setup including OAuth flows
 - Custom tool API details and advanced patterns
 - Full opencode.json schema and all available config options
+- Commands system for creating reusable workflows
+- AGENTS.md best practices and the /init command
