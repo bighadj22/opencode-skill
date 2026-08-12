@@ -68,7 +68,7 @@ Create `.opencode/skills/git-release/SKILL.md`:
 ---
 name: git-release
 description: Create consistent releases and changelogs
-license: MIT
+license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: maintainers

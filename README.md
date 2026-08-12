@@ -232,5 +232,5 @@ This skill works for any multi-step automated workflow:
 
 ## License
 
-MIT
+Apache-2.0
 

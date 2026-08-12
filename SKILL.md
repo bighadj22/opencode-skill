@@ -1,7 +1,7 @@
 ---
 name: agent-team-setup
 description: Scaffold a complete team of AI agents in any opencode project — coordinator, subagents, skills, custom tools, workspace, and config. Use when the user wants to automate a multi-step workflow, create an agent pipeline, or set up opencode agents.
-license: MIT
+license: Apache-2.0
 compatibility: opencode
 metadata:
   author: Bilal Mansouri
