@@ -1,0 +1,6 @@
+# Python dependencies for .opencode/tools/
+# Install with: pip3 install -r .opencode/tools/requirements.txt
+
+# requests>=2.31.0          # HTTP requests (web scraping, API calls)
+# beautifulsoup4>=4.12.0    # HTML parsing
+# yt-dlp>=2024.1.0          # YouTube transcript extraction
