@@ -222,7 +222,7 @@ Create a skill when:
 ### Linking Skills to Agents
 
 Mention skills by name in agent instructions:
-> "Follow the writing rules in the writer-arabic skill."
+> "Follow the writing rules in the writer-style skill."
 
 The coordinator or agent can load the skill using the skill tool when needed.
 

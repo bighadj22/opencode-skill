@@ -324,7 +324,7 @@ description: [One sentence: what this skill teaches, when to use it]
 ### 5.4 Linking skills to agents
 
 Mention skills by name in agent instructions:
-> "Follow the writing rules in the writer-arabic skill."
+> "Follow the writing rules in the writer-style skill."
 
 The coordinator or agent can load the skill using the skill tool when needed.
 
@@ -487,7 +487,7 @@ AGENTS.md
 
 ## Reference: Complete Example
 
-Here is the full pattern from a working production setup (an Arabic AI news blog):
+Here is the full pattern from a working production setup (a content publishing pipeline):
 
 ### Pipeline
 ```
@@ -503,15 +503,15 @@ User → coordinator → scout → planner → writer → illustrator → editor
   "default_agent": "coordinator",
   "instructions": ["AGENTS.md"],
   "mcp": {
-    "astro-docs": {
+    "docs-server": {
       "type": "remote",
-      "url": "https://mcp.docs.astro.build/mcp",
+      "url": "https://mcp.docs.example.com/mcp",
       "enabled": true
     }
   },
   "agent": {
     "coordinator": {
-      "description": "Master orchestrator for the news pipeline.",
+      "description": "Master orchestrator for the content pipeline.",
       "mode": "primary",
       "temperature": 0.2,
       "prompt": "You are the coordinator...\n\n1. Spawn scout...\n2. Spawn planner...\n3. Spawn writer...\n4. Spawn illustrator...\n5. Spawn editor...\n6. Spawn publisher...\n\nReport progress after every step. If an agent fails, stop and report.",
@@ -538,7 +538,7 @@ User → coordinator → scout → planner → writer → illustrator → editor
 name: scout
 description: Researches topics and saves a research brief.
 mode: subagent
-model: cloudflare-workers-ai/@cf/zai-org/glm-5.2
+model: anthropic/claude-sonnet-4-20250514
 temperature: 0.3
 permission:
   edit:
@@ -555,7 +555,7 @@ permission:
 Turn a raw topic into a dated, sourced research file.
 
 ## Steps
-1. Run `python3 .opencode/tools/search_duckduckgo.py "<topic>"` to gather sources.
+1. Run `python3 .opencode/tools/search_web.py "<topic>"` to gather sources.
 2. Extract hard facts: dates, names, numbers, quotes.
 3. Save to `.opencode/workspace/research/{slug}.md`.
 
@@ -564,39 +564,39 @@ Turn a raw topic into a dated, sourced research file.
 - Never invent facts. If missing, write "unavailable".
 ```
 
-### Tool (search_duckduckgo.ts)
+### Tool (search_web.ts)
 ```typescript
 import { tool } from "@opencode-ai/plugin"
 import path from "path"
 
 export default tool({
-  description: "Search the web via DuckDuckGo.",
+  description: "Search the web for information.",
   args: {
     query: tool.schema.string().describe("Search query"),
   },
   async execute(args, context) {
-    const script = path.join(context.worktree, ".opencode/tools/search_duckduckgo.py")
+    const script = path.join(context.worktree, ".opencode/tools/search_web.py")
     const result = await Bun.$`python3 ${script} ${args.query}`.text()
     return result.trim()
   },
 })
 ```
 
-### Skill (scout-research/SKILL.md)
+### Skill (research-workflow/SKILL.md)
 ```markdown
 ---
-name: scout-research
+name: research-workflow
 description: Research workflow — web search, source grading, fact recording.
 ---
 
-# Scout Research
+# Research Workflow
 
 ## Search
-- `python3 .opencode/tools/search_duckduckgo.py "<query>"`
+- `python3 .opencode/tools/search_web.py "<query>"`
 
 ## Grading sources
 - Tier A: official statements
-- Tier B: established news outlets
+- Tier B: established outlets
 - Tier C: blogs, forums — leads only
 
 ## Recording facts
