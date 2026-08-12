@@ -1,5 +1,7 @@
 # Agent Team Setup Skill
 
+![Agent Team Workflow](images/banner.png)
+
 A reusable opencode skill that scaffolds a complete team of AI agents in any project.
 
 ## What It Does
