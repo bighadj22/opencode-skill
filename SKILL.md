@@ -33,67 +33,65 @@ workspace, and the root `opencode.json` + `AGENTS.md` files.
 ## Phase 0: Model & Provider Setup
 
 Before planning the team, decide which LLM model the agents will use. This skill
-defaults to **Cloudflare Workers AI** so the user needs **no OpenAI or Anthropic API
-keys** to get started.
+uses **OpenCode's provider by default** with the free **DeepSeek V4 Flash** model.
 
-### 0.1 Default: Cloudflare Workers AI
+### 0.1 Default: OpenCode free model
 
-The default model for all agents is:
+Unless the user specifies another provider or model, use:
 
 ```
-cloudflare-workers-ai/@cf/zai-org/glm-5.2
+opencode/deepseek-v4-flash-free
 ```
 
-This routes LLM inference through **Cloudflare's Workers AI Gateway** using the
-GLM-5.2 model hosted on Cloudflare's edge. No external API keys are required.
+This is the default model for the top-level `opencode.json` and every generated
+subagent. If OpenCode is not connected yet, tell the user to run `/connect`, select
+OpenCode (OpenCode Zen), and use `/models` to confirm the model. Never place provider
+credentials in generated project files.
 
-**When to use the default:**
-- The user does not specify a model or provider
-- The user wants a free, no-API-key setup
+### 0.2 Optional providers
 
-**What to tell the user when using the default:**
+Cloudflare and other providers remain supported when the user explicitly selects
+them:
 
-> "Your agents will use Cloudflare Workers AI (`@cf/zai-org/glm-5.2`) as the LLM.
-> No OpenAI or Anthropic API keys are needed. If you want to use a different
-> provider, let me know and I'll switch the model."
-
-### 0.2 Alternative: Custom Provider
-
-If the user explicitly asks for a different provider/model, use that instead. Common
-alternatives:
-
-| Provider | Model ID example | When the user asks |
+| Provider | Connection | Model ID example |
 |---|---|---|
-| Anthropic | `anthropic/claude-sonnet-4-5` | "Use Claude" / "Use Anthropic" |
-| OpenAI | `openai/gpt-4o` | "Use OpenAI" / "Use GPT-4" |
-| OpenCode Zen | (via `/connect`) | "Use opencode connect" / "Use my existing provider" |
-| Google | `google/gemini-2.0-flash` | "Use Gemini" / "Use Google" |
+| OpenCode free (default) | `/connect` → OpenCode | `opencode/deepseek-v4-flash-free` |
+| Cloudflare Workers AI | `/connect` → Cloudflare Workers AI | `cloudflare-workers-ai/@cf/zai-org/glm-5.2` |
+| ChatGPT/OpenAI | `/connect` → OpenAI | `openai/<model-id>` |
+| Anthropic | `/connect` → Anthropic | `anthropic/<model-id>` |
+| Google | `/connect` → Google | `google/<model-id>` |
 
-If the user says "use opencode connect" or "use my existing provider", tell them to
-run `/connect` in the OpenCode TUI to configure their provider, then use the model
-they connected to. In this case, omit the `model` field from agent frontmatter so
-agents inherit the global default.
+ChatGPT free or paid login options depend on the installed OpenCode version and the
+account. Use the authentication choices shown by `/connect`, then select the model
+with `/models`.
 
 ### 0.3 Decision table
 
 | Situation | What to do |
 |---|---|
-| User says nothing about model | Use `cloudflare-workers-ai/@cf/zai-org/glm-5.2` for all agents |
-| User says "use Cloudflare" | Same as above |
-| User names a specific model (e.g. "use Claude") | Use that model ID |
-| User says "use opencode connect" / "use my provider" | Omit `model` field; agents inherit global config |
-| User wants different models per agent | Assign per agent in frontmatter |
+| User says nothing about model | Use `opencode/deepseek-v4-flash-free` for all agents |
+| User says "use OpenCode" | Use `opencode/deepseek-v4-flash-free` unless they name another OpenCode model |
+| User says "use Cloudflare" | Use the selected `cloudflare-workers-ai/<model-id>` |
+| User says "use ChatGPT" / "use OpenAI" | Use the model selected through `/connect` and `/models` |
+| User says "inherit my connected provider" | Omit the `model` field so agents inherit global config |
+| User names a specific model | Use that exact model ID |
+| User wants different models per agent | Assign each model in its agent frontmatter |
+
+The phrase "use OpenCode connect" means the default OpenCode provider unless the
+user explicitly asks to inherit an already-connected provider. Do not silently
+replace the OpenCode default with Cloudflare.
 
 ### 0.4 How the model appears in agent files
 
-Every subagent `.md` file gets a `model:` field in its YAML frontmatter:
+Every generated subagent `.md` file gets a `model:` field in its YAML frontmatter:
 
 ```yaml
-model: cloudflare-workers-ai/@cf/zai-org/glm-5.2
+model: opencode/deepseek-v4-flash-free
 ```
 
-If using a custom provider, replace the value with the user's chosen model ID. If
-the user wants agents to inherit the global model, omit the `model` line entirely.
+When a user chooses another provider, replace the value with that provider's model
+ID. If the user explicitly wants agents to inherit the global model, omit the
+`model` line entirely.
 
 ---
 
@@ -143,9 +141,8 @@ Each tool = one Python script + one TypeScript wrapper.
 
 ### 1.5 Choose the model
 
-**Default:** `cloudflare-workers-ai/@cf/zai-org/glm-5.2` (Cloudflare Workers AI — no
-API keys needed). Use this for all agents unless the user asks for something else
-(see Phase 0).
+**Default:** `opencode/deepseek-v4-flash-free` (OpenCode's free DeepSeek V4 Flash
+model). Use this for all agents unless the user asks for something else (see Phase 0).
 
 All agents can share the same model, or you can assign cheaper models to simple tasks
 and smarter models to complex ones. If the user wants different models per agent, set
@@ -643,8 +640,6 @@ Validate each file meets quality standards.
 
 ## Phase 9: Verify and Test
 
-## Phase 9: Verify and Test
-
 ### 9.1 Verify structure
 
 Check that all files exist:
@@ -695,7 +690,7 @@ User → coordinator → scout → planner → writer → illustrator → editor
 {
   "$schema": "https://opencode.ai/config.json",
   "default_agent": "coordinator",
-  "model": "cloudflare-workers-ai/@cf/zai-org/glm-5.2",
+  "model": "opencode/deepseek-v4-flash-free",
   "instructions": ["AGENTS.md"],
   "mcp": {
     "docs-server": {
@@ -733,7 +728,7 @@ User → coordinator → scout → planner → writer → illustrator → editor
 name: scout
 description: Researches topics and saves a research brief.
 mode: subagent
-model: cloudflare-workers-ai/@cf/zai-org/glm-5.2
+model: opencode/deepseek-v4-flash-free
 temperature: 0.3
 permission:
   edit:
@@ -802,15 +797,15 @@ Only write facts with a source. Note: what, when, who, URL.
 
 ## Checklist: Complete Agent Team Setup
 
-- [ ] Model: Default to `cloudflare-workers-ai/@cf/zai-org/glm-5.2` unless user specifies otherwise
+- [ ] Model: Default to `opencode/deepseek-v4-flash-free` unless user specifies otherwise
 - [ ] Plan: pipeline steps, agents, handoffs, tools, model, temperatures
 - [ ] Create `.opencode/` directory structure
 - [ ] Create `.opencode/package.json` and run `npm install`
 - [ ] Create `.opencode/.gitignore`
 - [ ] Create workspace subdirectories
-- [ ] Create `opencode.json` with coordinator (and provider/model if using Cloudflare default)
+- [ ] Create `opencode.json` with coordinator and the selected provider/model
 - [ ] Create `AGENTS.md` with project context (or run `/init`)
-- [ ] Create one `.md` per subagent in `.opencode/agents/` (with Cloudflare model in frontmatter)
+- [ ] Create one `.md` per subagent in `.opencode/agents/` (with the selected model in frontmatter)
 - [ ] Create one `SKILL.md` per skill in `.opencode/skills/[name]/`
 - [ ] Create `.py` + `.ts` pairs per tool in `.opencode/tools/`
 - [ ] Create `requirements.txt` for Python deps

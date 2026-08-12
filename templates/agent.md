@@ -2,7 +2,7 @@
 name: {{AGENT_NAME}}
 description: {{AGENT_DESCRIPTION}}
 mode: subagent
-model: cloudflare-workers-ai/@cf/zai-org/glm-5.2
+model: opencode/deepseek-v4-flash-free
 temperature: {{TEMPERATURE}}
 permission:
   edit:
