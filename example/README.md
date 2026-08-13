@@ -1,5 +1,7 @@
 # Tech News Daily Digest Example
 
+![Tech News Daily Digest](../images/tech-news-daily.png)
+
 This directory is a complete example generated with the
 [agent-team-setup skill](../SKILL.md). It uses an OpenCode agent team to turn the
 current top Hacker News stories into a source-grounded daily Markdown digest.
