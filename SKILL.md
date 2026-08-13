@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: opencode
 metadata:
   author: Bilal Mansouri
-  version: "1.0.0"
+  version: "1.1.0"
   category: opencode-setup
 ---
 
@@ -30,10 +30,44 @@ workspace, and the root `opencode.json` + `AGENTS.md` files.
 
 ---
 
+## Mandatory Reference-First Protocol
+
+This is a reference-backed setup skill. Before answering, asking a clarification,
+planning, choosing a configuration shape, or writing any generated file, first
+use the file tools to inspect and read the relevant files in this skill's bundled
+`references/` directory. Do not rely on memory for OpenCode behavior or invent
+configuration fields.
+
+The bundled `references/` directory belongs to this skill. Do not copy it into a
+generated project, template, example, or target repository.
+
+At minimum, read these references for every setup:
+
+- `references/opencode-config.md` for `opencode.json` fields and schema
+- `references/opencode-agents.md` for agent modes, models, and permissions
+- `references/opencode-rules.md` for `AGENTS.md`, instructions, and file loading
+- `references/opencode-permissions.md` for permission patterns and task access
+
+Also read `opencode-skills.md`, `opencode-tools.md`, `opencode-commands.md`, or
+the other reference files when the requested setup uses those features. Treat
+the references as the source of truth. If they do not answer a question, read
+the official schema or documentation before proceeding, and ask the user rather
+than guessing when the behavior is still unclear. Inspect the target project's
+actual files for project-specific facts; do not replace repository evidence with
+assumptions.
+
+This protocol applies to the agent using this skill while it is designing and
+scaffolding a team. Generated projects should contain only their own
+project-specific instructions and references.
+
+---
+
 ## Phase 0: Model & Provider Setup
 
 Before planning the team, decide which LLM model the agents will use. This skill
 uses **OpenCode's provider by default** with the free **DeepSeek V4 Flash** model.
+Model selection is a hard gate: decide it before creating any agent file and
+carry the selected model through every generated agent.
 
 ### 0.1 Default: OpenCode free model
 
@@ -43,10 +77,10 @@ Unless the user specifies another provider or model, use:
 opencode/deepseek-v4-flash-free
 ```
 
-This is the default model for the top-level `opencode.json` and every generated
-subagent. If OpenCode is not connected yet, tell the user to run `/connect`, select
-OpenCode (OpenCode Zen), and use `/models` to confirm the model. Never place provider
-credentials in generated project files.
+This is the default model for the top-level `opencode.json`, the coordinator, and
+every generated subagent. If OpenCode is not connected yet, tell the user to run
+`/connect`, select OpenCode (OpenCode Zen), and use `/models` to confirm the model.
+Never place provider credentials in generated project files.
 
 ### 0.2 Optional providers
 
@@ -83,7 +117,9 @@ replace the OpenCode default with Cloudflare.
 
 ### 0.4 How the model appears in agent files
 
-Every generated subagent `.md` file gets a `model:` field in its YAML frontmatter:
+Every generated subagent `.md` file gets an explicit `model:` field in its YAML
+frontmatter. Do not omit it just because `opencode.json` has a top-level model;
+that omission is the regression this rule prevents.
 
 ```yaml
 model: opencode/deepseek-v4-flash-free
@@ -91,7 +127,23 @@ model: opencode/deepseek-v4-flash-free
 
 When a user chooses another provider, replace the value with that provider's model
 ID. If the user explicitly wants agents to inherit the global model, omit the
-`model` line entirely.
+`model` line entirely, and only then. A missing model line is never an acceptable
+accident. For mixed models, set an explicit model on every agent and omit the
+top-level model only if the project has no single default.
+
+### 0.5 Model audit before completion
+
+Before reporting that the team is complete:
+
+1. Enumerate every generated file under `.opencode/agents/*.md`.
+2. Confirm each file has exactly one intended `model:` frontmatter value, unless
+   the user explicitly requested global inheritance.
+3. Confirm `opencode.json` has the selected top-level model for a single-model
+   team and that an inline coordinator also has an explicit `model` field.
+4. Confirm every model ID matches the user's request or the documented default;
+   fix any missing or inconsistent value before continuing.
+
+Do not skip this audit or report success based only on a top-level model.
 
 ---
 
@@ -225,6 +277,7 @@ NOT do work itself; it delegates to subagents in order.
     "coordinator": {
       "description": "Master orchestrator for the [PROJECT NAME] pipeline. Routes tasks to sub-agents in order.",
       "mode": "primary",
+      "model": "opencode/deepseek-v4-flash-free",
       "temperature": 0.2,
       "prompt": "You are the coordinator of [PROJECT DESCRIPTION].\n\nWhen the user gives you [INPUT TYPE], run the pipeline in order. At each step use the task tool with the matching subagent type and pass the [INPUT] (and any intermediate file paths) in your prompt. Do NOT do the agent's work yourself — delegate.\n\n1. Spawn the [AGENT_1] subagent with [INPUT]. It saves [OUTPUT_1] to [PATH_1] and returns a summary.\n2. Spawn the [AGENT_2] subagent with [OUTPUT_1_PATH]. It saves [OUTPUT_2] to [PATH_2].\n3. Continue for each agent in the pipeline...\n\nReport progress to the user after every step. If an agent fails or returns an error, stop and report the error to the user — never skip a step to work around a failure.\n\nIf the user asks for routine work unrelated to the pipeline, handle it directly or tell them what to do.",
       "permission": {
@@ -246,6 +299,7 @@ Key rules for the coordinator prompt:
 - Say "stop and report errors — never skip a step"
 - Say "report progress after every step"
 - Include a fallback instruction for non-pipeline tasks
+- Keep the selected model explicit in the coordinator and every subagent; do not rely on inheritance unless the user explicitly requests it
 
 ### 3.2 Add MCP servers (optional)
 
@@ -654,6 +708,10 @@ AGENTS.md
 .opencode/requirements.txt (if tools have Python deps)
 ```
 
+Also verify that every generated subagent has an explicit model in frontmatter
+and that the inline coordinator has an explicit model. For a single-model team,
+the top-level `opencode.json` model must match every agent model.
+
 ### 9.2 Test the pipeline
 
 1. Run `opencode` in the project directory.
@@ -703,6 +761,7 @@ User → coordinator → scout → planner → writer → illustrator → editor
     "coordinator": {
       "description": "Master orchestrator for the content pipeline.",
       "mode": "primary",
+      "model": "opencode/deepseek-v4-flash-free",
       "temperature": 0.2,
       "prompt": "You are the coordinator...\n\n1. Spawn scout...\n2. Spawn planner...\n3. Spawn writer...\n4. Spawn illustrator...\n5. Spawn editor...\n6. Spawn publisher...\n\nReport progress after every step. If an agent fails, stop and report.",
       "permission": {
@@ -798,18 +857,20 @@ Only write facts with a source. Note: what, when, who, URL.
 ## Checklist: Complete Agent Team Setup
 
 - [ ] Model: Default to `opencode/deepseek-v4-flash-free` unless user specifies otherwise
+- [ ] Reference-first protocol: read the relevant `references/` files before any answer or config edit
 - [ ] Plan: pipeline steps, agents, handoffs, tools, model, temperatures
 - [ ] Create `.opencode/` directory structure
 - [ ] Create `.opencode/package.json` and run `npm install`
 - [ ] Create `.opencode/.gitignore`
 - [ ] Create workspace subdirectories
-- [ ] Create `opencode.json` with coordinator and the selected provider/model
+- [ ] Create `opencode.json` with coordinator, an explicit coordinator model, and the selected provider/model
 - [ ] Create `AGENTS.md` with project context (or run `/init`)
 - [ ] Create one `.md` per subagent in `.opencode/agents/` (with the selected model in frontmatter)
 - [ ] Create one `SKILL.md` per skill in `.opencode/skills/[name]/`
 - [ ] Create `.py` + `.ts` pairs per tool in `.opencode/tools/`
 - [ ] Create `requirements.txt` for Python deps
 - [ ] Create custom commands in `.opencode/commands/` (optional)
+- [ ] Audit every generated agent for a missing or inconsistent `model:` field before reporting success
 - [ ] Test the pipeline end-to-end
 - [ ] Fix any issues from testing
 
